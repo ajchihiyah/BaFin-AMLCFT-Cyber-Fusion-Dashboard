@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BaFin AML/CFT & Cyber Fusion Dashboard -- Post-July 2026 Reorganization</title>
+  <style>
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #111827;
+      --bg-tertiary: #1f2937;
+      --accent-cyber: #06b6d4;
+      --accent-aml: #f59e0b;
+      --accent-critical: #ef4444;
+      --accent-sanctions: #8b5cf6;
+      --accent-travel: #10b981;
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --border-color: #374151;
+      --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .dashboard-container {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 12px; }
+
+    .bafin-badge {
+      background: linear-gradient(135deg, #1e3a5f, #0f172a);
+      border: 1px solid var(--accent-cyber);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--accent-cyber);
+      text-transform: uppercase;
+    }
+
+    .header-title { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+    .header-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+    .header-right { display: flex; gap: 8px; align-items: center; }
+
+    .status-pill {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-pill.critical {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-critical);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .status-pill.active {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-travel);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .dot.red { background: var(--accent-critical); }
+    .dot.green { background: var(--accent-travel); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .bafin-focus-banner {
+      background: linear-gradient(90deg, rgba(239,68,68,0.1), rgba(245,158,11,0.1), rgba(139,92,246,0.1));
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .focus-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .focus-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .focus-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    .focus-tf { background: rgba(239,68,68,0.2); color: var(--accent-critical); }
+    .focus-sanctions { background: rgba(139,92,246,0.2); color: var(--accent-sanctions); }
+    .focus-crypto { background: rgba(6,182,212,0.2); color: var(--accent-cyber); }
+    .focus-self { background: rgba(245,158,11,0.2); color: var(--accent-aml); }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+    }
+
+    .stat-card.cyber::before { background: var(--accent-cyber); }
+    .stat-card.aml::before { background: var(--accent-aml); }
+    .stat-card.critical::before { background: var(--accent-critical); }
+    .stat-card.sanctions::before { background: var(--accent-sanctions); }
+    .stat-card.travel::before { background: var(--accent-travel); }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .stat-delta {
+      font-size: 11px;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    .stat-delta.up { color: var(--accent-critical); }
+    .stat-delta.down { color: var(--accent-travel); }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      min-height: 400px;
+    }
+
+    @media (max-width: 1024px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .bottom-grid { grid-template-columns: 1fr !important; }
+    }
+
+    .panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .panel-icon.cyber { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyber); }
+    .panel-icon.aml { background: rgba(245, 158, 11, 0.15); color: var(--accent-aml); }
+
+    .panel-actions { display: flex; gap: 6px; }
+
+    .btn-sm {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid var(--border-color);
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-sm:hover {
+      background: var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .btn-sm.active {
+      background: var(--accent-cyber);
+      color: #000;
+      border-color: var(--accent-cyber);
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .alert-item {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-tertiary);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .alert-item:hover {
+      border-color: var(--accent-cyber);
+      transform: translateX(2px);
+    }
+
+    .alert-item.selected {
+      border-color: var(--accent-cyber);
+      background: rgba(6, 182, 212, 0.08);
+    }
+
+    .alert-item.correlated {
+      border-color: var(--accent-critical);
+      background: rgba(239, 68, 68, 0.08);
+      animation: borderPulse 2s infinite;
+    }
+
+    @keyframes borderPulse {
+      0%, 100% { border-color: var(--accent-critical); }
+      50% { border-color: rgba(239, 68, 68, 0.3); }
+    }
+
+    .alert-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .alert-id {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .alert-severity {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .severity-high {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--accent-critical);
+    }
+
+    .severity-medium {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--accent-aml);
+    }
+
+    .severity-low {
+      background: rgba(6, 182, 212, 0.2);
+      color: var(--accent-cyber);
+    }
+
+    .severity-critical {
+      background: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    .alert-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+
+    .alert-meta {
+      font-size: 11px;
+      color: var(--text-secondary);
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .alert-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .alert-tags {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .tag.bafin-priority {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-critical);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .tag.sanctions {
+      background: rgba(139, 92, 246, 0.15);
+      color: var(--accent-sanctions);
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+
+    .tag.travel {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-travel);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .tag.crypto {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent-cyber);
+      border-color: rgba(6, 182, 212, 0.3);
+    }
+
+    .tag.phantom {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-aml);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .correlation-score {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--accent-critical);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-family: var(--font-mono);
+    }
+
+    .timeline-mini {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .timeline-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border-color);
+      position: relative;
+    }
+
+    .timeline-dot.active {
+      background: var(--accent-critical);
+      box-shadow: 0 0 8px var(--accent-critical);
+    }
+
+    .timeline-dot::after {
+      content: attr(data-time);
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      font-family: var(--font-mono);
+    }
+
+    .correlation-strip {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .correlation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .correlation-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .chain-visualizer {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 20px;
+      background: var(--bg-primary);
+      border-radius: 10px;
+      overflow-x: auto;
+      min-height: 140px;
+    }
+
+    .chain-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      min-width: 140px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-tertiary);
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+
+    .chain-node.active {
+      border-color: var(--accent-critical);
+      background: rgba(239, 68, 68, 0.1);
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+    }
+
+    .chain-node.detected {
+      border-color: var(--accent-aml);
+      background: rgba(245, 158, 11, 0.1);
+    }
+
+    .chain-node-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      background: var(--bg-secondary);
+      border: 2px solid currentColor;
+    }
+
+    .chain-node-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .chain-node-time {
+      font-size: 10px;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .chain-node-detail {
+      font-size: 10px;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-top: 4px;
+      max-width: 120px;
+    }
+
+    .chain-connector {
+      flex: 0 0 40px;
+      height: 2px;
+      background: var(--border-color);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .chain-connector::after {
+      content: '';
+      position: absolute;
+      right: -4px;
+      top: -3px;
+      width: 0;
+      height: 0;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      border-left: 6px solid var(--border-color);
+    }
+
+    .chain-connector.active {
+      background: var(--accent-critical);
+    }
+
+    .chain-connector.active::after {
+      border-left-color: var(--accent-critical);
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    .panel-body.scrollable {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .sanctions-hit {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+    }
+
+    .sanctions-hit.critical {
+      border-color: var(--accent-sanctions);
+      background: rgba(139, 92, 246, 0.08);
+    }
+
+    .sanctions-hit.high {
+      border-color: rgba(139, 92, 246, 0.5);
+      background: rgba(139, 92, 246, 0.05);
+    }
+
+    .sanctions-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .sanctions-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sanctions-name {
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sanctions-meta {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .sanctions-score {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent-sanctions);
+    }
+
+    .travel-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+    }
+
+    .travel-item.violation {
+      border-color: var(--accent-critical);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .travel-item.compliant {
+      border-color: var(--accent-travel);
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .travel-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .travel-tx {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .travel-amount {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .travel-status {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .travel-status.missing {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--accent-critical);
+    }
+
+    .travel-status.ok {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--accent-travel);
+    }
+
+    .risk-heatmap {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin-top: 12px;
+    }
+
+    .heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .heatmap-cell:hover {
+      transform: scale(1.1);
+      z-index: 10;
+    }
+
+    .heatmap-legend {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      font-size: 10px;
+      color: var(--text-secondary);
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-color {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+
+    .exporter-panel {
+      background: linear-gradient(135deg, #1e3a5f, #0f172a);
+      border: 1px solid var(--accent-cyber);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .exporter-info h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--accent-cyber);
+    }
+
+    .exporter-info p {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .exporter-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--accent-cyber);
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      background: #22d3ee;
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-color);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4b5563;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+      <div class="header-left">
+        <div class="bafin-badge">BaFin 2026 Ready</div>
+        <div>
+          <div class="header-title">AML/CFT & Cyber Fusion Center</div>
+          <div class="header-subtitle">Post-Reorganization Anti-Financial-Crime Division &middot; Real-time SOC-AML Correlation</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="status-pill critical"><span class="dot red"></span>3 Critical Fusions</div>
+        <div class="status-pill active"><span class="dot green"></span>Live Feed</div>
+        <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);">
+          <span id="clock">--:--:--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BaFin 2026 Focus Banner -->
+    <div class="bafin-focus-banner">
+      <div class="focus-label">BaFin 2026 Enforcement Priorities:</div>
+      <div class="focus-item"><span class="focus-icon focus-tf">&#9888;</span> Terrorism Financing Typologies</div>
+      <div class="focus-item"><span class="focus-icon focus-sanctions">&#128683;</span> Sanctions Evasion</div>
+      <div class="focus-item"><span class="focus-icon focus-crypto">&#8383;</span> CASP Travel Rule</div>
+      <div class="focus-item"><span class="focus-icon focus-self">&#128272;</span> Self-Hosted Wallets</div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat-card cyber">
+        <div class="stat-label">Cyber Alerts (24h)</div>
+        <div class="stat-value" style="color: var(--accent-cyber);">847</div>
+        <div class="stat-delta up">&#8593; 12% vs yesterday</div>
+      </div>
+      <div class="stat-card aml">
+        <div class="stat-label">AML Alerts (24h)</div>
+        <div class="stat-value" style="color: var(--accent-aml);">1,203</div>
+        <div class="stat-delta up">&#8593; 8% vs yesterday</div>
+      </div>
+      <div class="stat-card critical">
+        <div class="stat-label">Fused Cases</div>
+        <div class="stat-value" style="color: var(--accent-critical);">23</div>
+        <div class="stat-delta up">&#8593; 3 new today</div>
+      </div>
+      <div class="stat-card sanctions">
+        <div class="stat-label">Sanctions Hits</div>
+        <div class="stat-value" style="color: var(--accent-sanctions);">7</div>
+        <div class="stat-delta down">&#8595; 2 resolved</div>
+      </div>
+      <div class="stat-card travel">
+        <div class="stat-label">Travel Rule Violations</div>
+        <div class="stat-value" style="color: var(--accent-travel);">4</div>
+        <div class="stat-delta up">&#8593; 1 pending</div>
+      </div>
+    </div>
+
+    <!-- Dual Pane Alert Correlation -->
+    <div class="main-grid">
+      <!-- Cyber Alerts Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-icon cyber">&#128737;</div>
+            Cyber Security Alerts
+          </div>
+          <div class="panel-actions">
+            <button class="btn-sm active" onclick="filterCyber('all', this)">All</button>
+            <button class="btn-sm" onclick="filterCyber('phishing', this)">Phishing</button>
+            <button class="btn-sm" onclick="filterCyber('credentials', this)">Credentials</button>
+            <button class="btn-sm" onclick="filterCyber('api', this)">API Abuse</button>
+          </div>
+        </div>
+        <div class="panel-body" id="cyberPanel"></div>
+      </div>
+
+      <!-- AML Alerts Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-icon aml">&#128176;</div>
+            Transaction Monitoring
+          </div>
+          <div class="panel-actions">
+            <button class="btn-sm active" onclick="filterAML('all', this)">All</button>
+            <button class="btn-sm" onclick="filterAML('structuring', this)">Structuring</button>
+            <button class="btn-sm" onclick="filterAML('crossborder', this)">Cross-Border</button>
+            <button class="btn-sm" onclick="filterAML('crypto', this)">Crypto</button>
+          </div>
+        </div>
+        <div class="panel-body" id="amlPanel"></div>
+      </div>
+    </div>
+
+    <!-- Attack-Financial Crime Chain Visualizer -->
+    <div class="correlation-strip">
+      <div class="correlation-header">
+        <div class="correlation-title">&#128269; Attack-Financial Crime Chain Visualizer</div>
+        <div style="font-size: 12px; color: var(--text-secondary);">
+          Selected Case: <span style="color: var(--accent-critical); font-weight: 700;">FUSION-2026-0742</span>
+          <span style="margin-left: 12px; padding: 2px 8px; background: rgba(239,68,68,0.2); color: var(--accent-critical); border-radius: 4px; font-size: 11px; font-weight: 700;">BAFIN PRIORITY: TERRORISM FINANCING</span>
+        </div>
+      </div>
+      <div class="chain-visualizer" id="chainVisualizer"></div>
+    </div>
+
+    <!-- Bottom Grid -->
+    <div class="bottom-grid">
+      <!-- Sanctions Screening -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-icon" style="background: rgba(139,92,246,0.15); color: var(--accent-sanctions);">&#128683;</div>
+            Sanctions Screening Hits
+          </div>
+          <div class="panel-actions">
+            <button class="btn-sm active">Live</button>
+          </div>
+        </div>
+        <div class="panel-body scrollable" id="sanctionsPanel"></div>
+      </div>
+
+      <!-- Travel Rule Tracker -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-icon" style="background: rgba(16,185,129,0.15); color: var(--accent-travel);">&#9992;</div>
+            Travel Rule Compliance
+          </div>
+          <div class="panel-actions">
+            <button class="btn-sm active">CASP Flows</button>
+          </div>
+        </div>
+        <div class="panel-body scrollable" id="travelPanel"></div>
+      </div>
+
+      <!-- Risk Heatmap -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-icon" style="background: rgba(245,158,11,0.15); color: var(--accent-aml);">&#128293;</div>
+            Fusion Risk Heatmap
+          </div>
+          <div class="panel-actions">
+            <button class="btn-sm active">24h</button>
+            <button class="btn-sm">7d</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">Cross-domain correlation intensity by customer segment</div>
+          <div class="risk-heatmap" id="riskHeatmap"></div>
+          <div class="heatmap-legend">
+            <div class="legend-item"><div class="legend-color" style="background: #064e3b;"></div> Low</div>
+            <div class="legend-item"><div class="legend-color" style="background: #059669;"></div> Med</div>
+            <div class="legend-item"><div class="legend-color" style="background: #f59e0b;"></div> High</div>
+            <div class="legend-item"><div class="legend-color" style="background: #dc2626;"></div> Critical</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BaFin Examination Ready Exporter -->
+    <div class="exporter-panel">
+      <div class="exporter-info">
+        <h3>&#128203; BaFin Examination Ready Case File Exporter</h3>
+        <p>Generate fused investigation timelines, evidence chains, and compliance documentation for special examinations</p>
+      </div>
+      <div class="exporter-actions">
+        <button class="btn btn-secondary" onclick="exportTimeline()">&#9201; Export Timeline</button>
+        <button class="btn btn-secondary" onclick="exportEvidence()">&#128206; Evidence Package</button>
+        <button class="btn btn-primary" onclick="exportFullCase()">&#128230; Generate Full Case File</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleTimeString('de-DE', { hour12: false });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Data Models
+    const cyberAlerts = [
+      {
+        id: 'CYB-2026-4521',
+        title: 'Business Email Compromise -- CFO Impersonation',
+        severity: 'high',
+        time: '14:32:18',
+        source: 'Email Gateway / O365',
+        user: 'corporate.client@target.de',
+        ip: '185.220.101.44',
+        tags: ['bafin-priority', 'phishing', 'BEC'],
+        correlated: true,
+        correlationScore: 0.94,
+        amlId: 'AML-2026-8892'
+      },
+      {
+        id: 'CYB-2026-4520',
+        title: 'Credential Stuffing Attack -- 847 Attempts',
+        severity: 'medium',
+        time: '14:28:05',
+        source: 'WAF / Bot Detection',
+        user: 'retail.user@bank.de',
+        ip: '194.32.107.89',
+        tags: ['credentials', 'automation'],
+        correlated: false
+      },
+      {
+        id: 'CYB-2026-4519',
+        title: 'Unusual Login Pattern -- TOR Exit Node',
+        severity: 'high',
+        time: '14:15:33',
+        source: 'IAM / SSO',
+        user: 'premium.client@wealth.de',
+        ip: '146.59.158.228',
+        tags: ['bafin-priority', 'anonymization', 'sanctions'],
+        correlated: true,
+        correlationScore: 0.87,
+        amlId: 'AML-2026-8891'
+      },
+      {
+        id: 'CYB-2026-4518',
+        title: 'API Abuse -- Rate Limit Bypass',
+        severity: 'medium',
+        time: '13:58:12',
+        source: 'API Gateway',
+        user: 'fintech.partner@api.de',
+        ip: '52.29.184.101',
+        tags: ['api', 'automation'],
+        correlated: false
+      },
+      {
+        id: 'CYB-2026-4517',
+        title: 'Phishing -- MiCAR License Spoofing',
+        severity: 'high',
+        time: '13:42:00',
+        source: 'Email Gateway',
+        user: 'casp.onboarding@crypto.de',
+        ip: '203.174.26.88',
+        tags: ['bafin-priority', 'phishing', 'crypto'],
+        correlated: true,
+        correlationScore: 0.91,
+        amlId: 'AML-2026-8890'
+      },
+      {
+        id: 'CYB-2026-4516',
+        title: 'Self-Hosted Wallet Interaction Detected',
+        severity: 'medium',
+        time: '13:30:45',
+        source: 'Blockchain Monitor',
+        user: '0x7a2f...9e4b',
+        ip: 'N/A',
+        tags: ['crypto', 'self-hosted'],
+        correlated: false
+      }
+    ];
+
+    const amlAlerts = [
+      {
+        id: 'AML-2026-8892',
+        title: 'Rapid Fund Movement -- EUR 2.4M Wire to High-Risk Jurisdiction',
+        severity: 'high',
+        time: '14:35:42',
+        amount: 'EUR 2,400,000',
+        destination: 'TR (Turkey) -> IR (Iran) via intermediary',
+        tags: ['bafin-priority', 'sanctions', 'structuring'],
+        correlated: true,
+        cyberId: 'CYB-2026-4521',
+        correlationScore: 0.94
+      },
+      {
+        id: 'AML-2026-8891',
+        title: 'Cross-Border Wire -- PEP-Related Beneficiary',
+        severity: 'high',
+        time: '14:18:11',
+        amount: 'EUR 850,000',
+        destination: 'AE (UAE) -> RU (Russia) shell company',
+        tags: ['bafin-priority', 'sanctions', 'PEP'],
+        correlated: true,
+        cyberId: 'CYB-2026-4519',
+        correlationScore: 0.87
+      },
+      {
+        id: 'AML-2026-8890',
+        title: 'Crypto Conversion -- CASP Transaction without Travel Rule Data',
+        severity: 'high',
+        time: '13:45:22',
+        amount: 'EUR 125,000 (BTC)',
+        destination: 'Unhosted Wallet -> Mixer Service',
+        tags: ['bafin-priority', 'travel-rule', 'crypto'],
+        correlated: true,
+        cyberId: 'CYB-2026-4517',
+        correlationScore: 0.91
+      },
+      {
+        id: 'AML-2026-8889',
+        title: 'Structuring -- 12 Sub-EUR 10K Deposits in 48h',
+        severity: 'medium',
+        time: '13:22:08',
+        amount: 'EUR 118,000 total',
+        destination: 'Cash deposits across 4 branches',
+        tags: ['structuring'],
+        correlated: false
+      },
+      {
+        id: 'AML-2026-8888',
+        title: 'Terrorism Financing Typology -- Small Value Donations',
+        severity: 'high',
+        time: '12:58:33',
+        amount: 'EUR 50 - EUR 200 (x34)',
+        destination: 'NGO with adverse media (Syria link)',
+        tags: ['bafin-priority', 'terrorism-financing'],
+        correlated: false
+      },
+      {
+        id: 'AML-2026-8887',
+        title: 'Sanctions Circumvention -- Phantom Trade Invoice',
+        severity: 'critical',
+        time: '12:30:15',
+        amount: 'EUR 3,200,000',
+        destination: 'DE -> KZ (Kazakhstan) -> IR (Iran)',
+        tags: ['bafin-priority', 'sanctions', 'phantom-trade'],
+        correlated: false
+      }
+    ];
+
+    const sanctionsHits = [
+      { name: 'Khorasan Trade GmbH', list: 'EU Consolidated List', match: '95%', type: 'Entity', risk: 'critical' },
+      { name: 'Ali Rezaei', list: 'OFAC SDN', match: '88%', type: 'Individual', risk: 'high' },
+      { name: 'Caspian Oil Services LLC', list: 'EU Consolidated List', match: '92%', type: 'Entity', risk: 'critical' },
+      { name: 'Mohammad Hosseini', list: 'UN 1267', match: '81%', type: 'Individual', risk: 'high' },
+      { name: 'Persian Gulf Holdings', list: 'OFAC SDN', match: '76%', type: 'Entity', risk: 'medium' },
+      { name: 'Nordic Shipping AS', list: 'EU Consolidated List', match: '89%', type: 'Entity', risk: 'high' },
+      { name: 'Rostec subsidiary (unidentified)', list: 'Sectoral Sanctions', match: '72%', type: 'Entity', risk: 'medium' }
+    ];
+
+    const travelRules = [
+      { tx: '0x9a2f...e4b1', amount: 'EUR 125,000', from: 'CASP-A (DE)', to: 'Self-Hosted', status: 'violation', reason: 'Missing originator data' },
+      { tx: '0x3b8c...f2a5', amount: 'EUR 45,000', from: 'CASP-B (NL)', to: 'CASP-C (DE)', status: 'compliant', reason: 'Full data exchanged' },
+      { tx: '0x7d1e...a9c3', amount: 'EUR 890,000', from: 'CASP-D (CH)', to: 'CASP-E (DE)', status: 'violation', reason: 'Unverified beneficiary' },
+      { tx: '0x2f5a...b8d2', amount: 'EUR 12,000', from: 'Self-Hosted', to: 'CASP-F (DE)', status: 'violation', reason: 'Missing proof of ownership' },
+      { tx: '0x8c4e...d1f7', amount: 'EUR 230,000', from: 'CASP-G (DE)', to: 'CASP-H (FR)', status: 'compliant', reason: 'Full data exchanged' }
+    ];
+
+    const chainData = [
+      { stage: 'Initial Compromise', icon: '&#9993;', label: 'BEC Phishing', time: '14:32:18', status: 'active', detail: 'CFO impersonation email delivered' },
+      { stage: 'Lateral Movement', icon: '&#128273;', label: 'Credential Harvest', time: '14:33:45', status: 'active', detail: 'MFA bypass via proxy phishing' },
+      { stage: 'Privilege Escalation', icon: '&#11014;', label: 'Admin Access', time: '14:35:10', status: 'active', detail: 'Wire transfer authorization obtained' },
+      { stage: 'Financial Crime', icon: '&#128184;', label: 'Fraudulent Wire', time: '14:35:42', status: 'active', detail: 'EUR 2.4M wire to intermediary account' },
+      { stage: 'Layering', icon: '&#128260;', label: 'Rapid Structuring', time: '14:38:12', status: 'detected', detail: 'Split across 6 accounts in 3 jurisdictions' },
+      { stage: 'Integration', icon: '&#8383;', label: 'Crypto Conversion', time: '14:42:00', status: 'detected', detail: 'CASP conversion to BTC via unhosted wallet' }
+    ];
+
+    function getTagClass(tag) {
+      const map = {
+        'bafin-priority': 'bafin-priority',
+        'sanctions': 'sanctions',
+        'travel-rule': 'travel',
+        'crypto': 'crypto',
+        'phantom-trade': 'phantom',
+        'terrorism-financing': 'bafin-priority',
+        'PEP': 'sanctions',
+        'structuring': 'aml',
+        'phishing': 'cyber',
+        'BEC': 'cyber',
+        'credentials': 'cyber',
+        'automation': 'cyber',
+        'api': 'cyber',
+        'anonymization': 'cyber',
+        'self-hosted': 'crypto'
+      };
+      return map[tag] || '';
+    }
+
+    function renderCyberAlerts(filter) {
+      const panel = document.getElementById('cyberPanel');
+      const filtered = filter === 'all' ? cyberAlerts : cyberAlerts.filter(a => a.tags.includes(filter));
+
+      panel.innerHTML = filtered.map(alert => {
+        let html = '<div class="alert-item' + (alert.correlated ? ' correlated' : '') + '" onclick="selectAlert(this)">';
+        if (alert.correlated) {
+          html += '<div class="correlation-score">' + (alert.correlationScore * 100).toFixed(0) + '%</div>';
+        }
+        html += '<div class="alert-header">';
+        html += '<span class="alert-id">' + alert.id + '</span>';
+        html += '<span class="alert-severity severity-' + alert.severity + '">' + alert.severity + '</span>';
+        html += '</div>';
+        html += '<div class="alert-title">' + alert.title + '</div>';
+        html += '<div class="alert-meta">';
+        html += '<span>&#9201; ' + alert.time + '</span>';
+        html += '<span>&#128100; ' + alert.user + '</span>';
+        html += '<span>&#127760; ' + alert.ip + '</span>';
+        html += '</div>';
+        html += '<div class="alert-tags">';
+        alert.tags.forEach(t => {
+          html += '<span class="tag ' + getTagClass(t) + '">' + t + '</span>';
+        });
+        html += '</div>';
+        if (alert.correlated) {
+          html += '<div class="timeline-mini">';
+          for (let i = 1; i <= 5; i++) {
+            html += '<div class="timeline-dot' + (i <= 3 ? ' active' : '') + '" data-time="+' + i + 'm"></div>';
+          }
+          html += '</div>';
+        }
+        html += '</div>';
+        return html;
+      }).join('');
+    }
+
+    function renderAMLAlerts(filter) {
+      const panel = document.getElementById('amlPanel');
+      const filtered = filter === 'all' ? amlAlerts : amlAlerts.filter(a => a.tags.includes(filter));
+
+      panel.innerHTML = filtered.map(alert => {
+        let html = '<div class="alert-item' + (alert.correlated ? ' correlated' : '') + '" onclick="selectAlert(this)">';
+        if (alert.correlated) {
+          html += '<div class="correlation-score">' + (alert.correlationScore * 100).toFixed(0) + '%</div>';
+        }
+        html += '<div class="alert-header">';
+        html += '<span class="alert-id">' + alert.id + '</span>';
+        html += '<span class="alert-severity severity-' + alert.severity + '">' + alert.severity + '</span>';
+        html += '</div>';
+        html += '<div class="alert-title">' + alert.title + '</div>';
+        html += '<div class="alert-meta">';
+        html += '<span>&#9201; ' + alert.time + '</span>';
+        html += '<span>&#128182; ' + alert.amount + '</span>';
+        html += '<span>&#127757; ' + alert.destination + '</span>';
+        html += '</div>';
+        html += '<div class="alert-tags">';
+        alert.tags.forEach(t => {
+          html += '<span class="tag ' + getTagClass(t) + '">' + t + '</span>';
+        });
+        html += '</div>';
+        if (alert.correlated) {
+          html += '<div class="timeline-mini">';
+          for (let i = 1; i <= 5; i++) {
+            html += '<div class="timeline-dot' + (i <= 3 ? ' active' : '') + '" data-time="+' + i + 'm"></div>';
+          }
+          html += '</div>';
+        }
+        html += '</div>';
+        return html;
+      }).join('');
+    }
+
+    function renderChain() {
+      const container = document.getElementById('chainVisualizer');
+      let html = '';
+      chainData.forEach((node, i) => {
+        html += '<div class="chain-node ' + node.status + '">';
+        html += '<div class="chain-node-icon" style="color: ' + (node.status === 'active' ? 'var(--accent-critical)' : 'var(--accent-aml)') + ';">' + node.icon + '</div>';
+        html += '<div class="chain-node-label">' + node.label + '</div>';
+        html += '<div class="chain-node-time">' + node.time + '</div>';
+        html += '<div class="chain-node-detail">' + node.detail + '</div>';
+        html += '</div>';
+        if (i < chainData.length - 1) {
+          html += '<div class="chain-connector' + (node.status === 'active' ? ' active' : '') + '"></div>';
+        }
+      });
+      container.innerHTML = html;
+    }
+
+    function renderSanctions() {
+      const panel = document.getElementById('sanctionsPanel');
+      panel.innerHTML = sanctionsHits.map(hit => {
+        let html = '<div class="sanctions-hit ' + hit.risk + '">';
+        html += '<div class="sanctions-avatar">&#128683;</div>';
+        html += '<div class="sanctions-info">';
+        html += '<div class="sanctions-name">' + hit.name + '</div>';
+        html += '<div class="sanctions-meta">' + hit.list + ' &middot; ' + hit.type + '</div>';
+        html += '</div>';
+        html += '<div class="sanctions-score">' + hit.match + '</div>';
+        html += '</div>';
+        return html;
+      }).join('');
+    }
+
+    function renderTravel() {
+      const panel = document.getElementById('travelPanel');
+      panel.innerHTML = travelRules.map(tx => {
+        let html = '<div class="travel-item ' + tx.status + '">';
+        html += '<div class="travel-info">';
+        html += '<div class="travel-tx">' + tx.tx + '</div>';
+        html += '<div class="travel-amount">' + tx.amount + '</div>';
+        html += '<div style="font-size: 11px; color: var(--text-secondary);">' + tx.from + ' &rarr; ' + tx.to + '</div>';
+        html += '</div>';
+        html += '<div>';
+        html += '<div class="travel-status ' + (tx.status === 'violation' ? 'missing' : 'ok') + '">' + tx.status + '</div>';
+        html += '<div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px; text-align: right;">' + tx.reason + '</div>';
+        html += '</div>';
+        html += '</div>';
+        return html;
+      }).join('');
+    }
+
+    function renderHeatmap() {
+      const container = document.getElementById('riskHeatmap');
+      const colors = ['#064e3b', '#059669', '#f59e0b', '#dc2626'];
+      const labels = ['Corp', 'Retail', 'Wealth', 'CASP', 'PSP', 'EMI', 'Fund', 'Insurer'];
+
+      let html = '';
+      for (let i = 0; i < 16; i++) {
+        const risk = Math.floor(Math.random() * 4);
+        const label = labels[i % labels.length];
+        html += '<div class="heatmap-cell" style="background: ' + colors[risk] + '; color: ' + (risk > 1 ? '#fff' : '#9ca3af') + ';" title="' + label + ': Risk Level ' + (risk + 1) + '">' + label[0] + '</div>';
+      }
+      container.innerHTML = html;
+    }
+
+    function filterCyber(type, btn) {
+      const panel = document.getElementById('cyberPanel');
+      const buttons = panel.previousElementSibling.querySelectorAll('.btn-sm');
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderCyberAlerts(type);
+    }
+
+    function filterAML(type, btn) {
+      const panel = document.getElementById('amlPanel');
+      const buttons = panel.previousElementSibling.querySelectorAll('.btn-sm');
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderAMLAlerts(type);
+    }
+
+    function selectAlert(el) {
+      document.querySelectorAll('.alert-item').forEach(item => item.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function exportTimeline() {
+      alert('BaFin Examination Timeline exported\n\nIncludes:\n- Fused investigation chronology\n- Cyber-AML correlation timestamps\n- Chain of custody documentation\n- BaFin special examination format (PDF)');
+    }
+
+    function exportEvidence() {
+      alert('Evidence Package exported\n\nIncludes:\n- Raw alert data (JSON/STIX)\n- Transaction records\n- Sanctions screening logs\n- Travel Rule compliance proof\n- Digital signatures and hashes');
+    }
+
+    function exportFullCase() {
+      alert('Full Case File Generated\n\nBaFin Special Examination Ready Package:\n- Fused case narrative\n- Attack-financial crime chain visualization\n- Sanctions hit analysis\n- Travel Rule violation report\n- Risk assessment and typology mapping\n- Recommended supervisory actions\n\nFormat: PDF + Structured Data (XML/JSON)\nCompliance: BaFin 2026 Anti-Financial-Crime Division standards');
+    }
+
+    // Initialize
+    renderCyberAlerts('all');
+    renderAMLAlerts('all');
+    renderChain();
+    renderSanctions();
+    renderTravel();
+    renderHeatmap();
+  </script>
+</body>
+</html>
