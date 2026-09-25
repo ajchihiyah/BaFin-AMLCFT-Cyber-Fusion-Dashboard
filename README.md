@@ -1,3 +1,5 @@
+<img width="1616" height="942" alt="image" src="https://github.com/user-attachments/assets/478bc478-0cd1-49ef-8fc8-e2ce5a7f406e" />
+
 # BaFin AML/CFT & Cyber Fusion Dashboard
 ## Post-July 2026 Reorganization Edition
 
