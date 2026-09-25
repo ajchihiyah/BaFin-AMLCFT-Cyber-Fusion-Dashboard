@@ -195,6 +195,18 @@ Recommended backend integrations:
 
 ---
 
+## Architecture & Production Path
+
+**Current implementation:** Zero-dependency, single-file vanilla JS (HTML/CSS/JS) —
+deployable in restricted SOC environments with no build step or external dependencies.
+
+**Production implementation path:** Where multi-user, real-time, or enterprise integration
+requirements demand it, the production build is implemented in **React with D3.js/Chart.js**
+for componentized state management, API-driven data layers, and role-based access —
+migrating the current state-driven rendering pattern into a component architecture.
+
+---
+
 ## License
 
 Proprietary — developed for German financial institutions preparing for BaFin's 2026 Anti-Financial-Crime Division special examinations.
